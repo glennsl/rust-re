@@ -28,6 +28,7 @@ To be implemented
 * Backreferences (\1 to \9)
 * Positive and negative lookahead ((?=) and (?!))
 * Infinite loop detection
+* Unicode support
 * Options
     * Ignore case
     * Multiline

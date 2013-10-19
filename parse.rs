@@ -62,6 +62,12 @@ impl<'self> Parser<'self> {
         }
     }
 
+    fn advance(&mut self, n: uint) {
+        do n.times {
+            self.next();
+        }
+    }
+
     fn peek(&mut self, offset: uint) -> Option<char> {
         let mut pos = self.next;
         let mut ret = None;
@@ -116,7 +122,7 @@ fn do_alternate(stack: &mut ~[Expression]) {
     }
 }
 
-fn negate_charclass(ranges: &[(char, char)]) -> Expression {
+fn negate_char_ranges(ranges: &[(char, char)]) -> Expression {
     let mut inverted_ranges = ~[];
 
     let sorted_ranges = sort::merge_sort(ranges, |v1, v2| v1.first() <= v2.first());
@@ -131,11 +137,7 @@ fn negate_charclass(ranges: &[(char, char)]) -> Expression {
         end = start;
     }
     inverted_ranges.push((start, u8::max_value as char));
-    /*
-    for &(s, e) in inverted_ranges.iter() {
-        println("(" + (s as u8).to_str() + "[" + str::from_char(s) + "], " + (e as u8).to_str() + "[" + str::from_char(e) + "])");
-    }
-    */
+
     return CharacterClass(inverted_ranges);
 }
 
@@ -186,7 +188,7 @@ fn parse_charclass(parser: &mut Parser) -> Expression {
         parser.fail("Empty character class");
     }
     if negated {
-        return negate_charclass(ranges);
+        return negate_char_ranges(ranges);
     } else {
         return CharacterClass(ranges);
     }
@@ -215,7 +217,7 @@ fn parse_common_escape(c: char) -> Option<Expression> {
     };
 
     if c.is_uppercase() {
-        Some(negate_charclass(ranges))
+        Some(negate_char_ranges(ranges))
     } else {
         Some(CharacterClass(ranges))
     }
@@ -253,8 +255,7 @@ fn parse_group(parser: &mut Parser) -> Expression {
 			match parser.peek(2) {
 				Some(':') => {
 					// Non-capturing group
-					parser.next();
-					parser.next();
+					parser.advance(2);
 					let e = parse_recursive(parser);
 					return SubExpression(~e, None);
 				}
