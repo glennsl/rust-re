@@ -57,7 +57,7 @@ pub struct Regex {
 impl Regex {
     fn new(pattern: &str) -> ~Regex {
         let etree = parse::parse(pattern);
-        let code = compile::compile(etree);
+        let code = compile::compile(&etree);
         let registers = compile::count_registers(code);
         return ~Regex { code: code, registers: registers };
     }
@@ -67,15 +67,17 @@ impl Regex {
         let mut next_threads = ~[]; // nlist
         let mut matched = None;
 
-        let debug = true;
+        let debug = false;
         //println("Inout: " + input);
         //debug::print_code(self.code);
 
         let mut thread_id = 0;
         let add_thread = |l: &mut ~[~Thread], pc, sp, captures: ~[Option<Match>], registers: ~[uint]| {
+            /*
             if thread_id == 50 {
                 fail!("Infinite loop?");
             }
+            */
             let t = ~Thread {
                 pc: pc,
                 id: thread_id,
@@ -357,9 +359,9 @@ fn main()  {
             let etree = parse::parse(pattern);
             println("\nExpression Tree");
             println("-----------------");
-            debug::print_expression_tree(etree);
+            debug::print_expression_tree(&etree);
 
-            let code = compile::compile(etree);
+            let code = compile::compile(&etree);
             println("\nCode");
             println("------");
             debug::print_code(code);

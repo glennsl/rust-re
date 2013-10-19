@@ -47,10 +47,10 @@ pub enum Instruction {
 }
 
 // TODO: Also defined in parse
-fn do_alternate(stack: &mut ~[~Expression]) {
+fn do_alternate(stack: &mut ~[Expression]) {
     while stack.len() > 1 {
         let (right, left) = (stack.pop(), stack.pop());
-        stack.push(~Alternate(left, right));
+        stack.push(Alternate(~left, ~right));
     }
 }
 
@@ -95,12 +95,12 @@ fn compile_recursive(expression: &Expression, code: &mut ~[Instruction], registe
         CharacterClass(ref ranges) => {
             let mut stack = ranges.map(|r| {
                 match r {
-                    &(start, end) if start == end => ~Literal(start),
-                    &(start, end) => ~RangeLiteral(start, end)
+                    &(start, end) if start == end => Literal(start),
+                    &(start, end) => RangeLiteral(start, end)
                 }
             });
             do_alternate(&mut stack);
-            compile_recursive(stack.pop(), code, registers);
+            compile_recursive(&stack.pop(), code, registers);
         }
         Concatenate(ref left, ref right) => {
             compile_recursive(*left, code, registers);

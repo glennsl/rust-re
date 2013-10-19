@@ -27,7 +27,7 @@ To be implemented
 
 * Backreferences (\1 to \9)
 * Positive and negative lookahead ((?=) and (?!))
-* Infinite loop resolution
+* Infinite loop detection
 * Options
     * Ignore case
     * Multiline
