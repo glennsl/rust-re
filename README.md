@@ -3,9 +3,9 @@ rust-re
 
 A regular expression engine written entirely in Rust. It is based on Pike VM (http://swtch.com/~rsc/regexp/regexp2.html), the only significant difference being that it prioritizes threads in the main loop instead of using recursion.
 
-The goal is to at least implement ECMA-262 natively in Rust, and be able to perform reliably and well for all accepted input. It is NOT a goal to be the fastest or the most fully-featured regex implementation. It should be good and maintainable enough to be included in Rust's standard library, but for very special needs, you should use a very special library.
+The goal is to at least implement the regular expression part of ECMA-262 (http://www.ecma-international.org/ecma-262/5.1/#sec-15.10) natively in Rust, and to perform reliably and well for all accepted input. It is NOT a goal to be the fastest or the most fully-featured regex implementation. It should be good and maintainable enough to be included in Rust's standard library, but for very special needs, you should use a very special library.
 
-When run, it will currently output the parse tree and compiled code, as well as the result of the regex run on the provided input. There is also an extensive test suite, borrowed mostly from the python regex implementation (http://hg.python.org/cpython/file/178075fbff3a/Lib/test/re_tests.py).
+When run, it will currently output the parse tree and compiled code, as well as the result of the regex run on the provided input. There is also an extensive test suite, borrowed mostly from the python regex implementation (http://hg.python.org/cpython/file/178075fbff3a/Lib/test/re_tests.py), which is again mostly borrowed from Perl.
 
 Currently implemented features
 ------------------------------
