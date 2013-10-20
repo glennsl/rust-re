@@ -2,3 +2,7 @@
 re
 
 re.dSYM/Contents/Resources/DWARF/re
+
+*.plist
+
+.DS_Store
