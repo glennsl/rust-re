@@ -63,13 +63,9 @@ impl Regex {
     }
 
     fn partial_match(&self, input: &str) -> Option<~[Match]> {
-        let mut threads = ~[]; // clist
-        let mut next_threads = ~[]; // nlist
+        let mut threads = vec::with_capacity(self.code.len()); // clist
+        let mut next_threads = vec::with_capacity(self.code.len()); // nlist
         let mut matched = None;
-
-        let debug = false;
-        //println("Inout: " + input);
-        //debug::print_code(self.code);
 
         let mut thread_id = 0;
         let add_thread = |l: &mut ~[~Thread], pc, sp, captures: ~[Option<Match>], registers: ~[uint]| {
@@ -90,15 +86,12 @@ impl Regex {
         };
 
         for (sp, c) in input.iter().chain("\x03".iter()).enumerate() {
-            if debug {
-                println!("Input {}", c);
-            }
+
+            debug!("Input {}", c);
 
             if matched.is_none() {
-                if debug {
-                    println!("\tAdd thread {}: {}", thread_id, sp);
-                }
-                
+                debug!("\tAdd thread {}: {}", thread_id, sp);
+
                 add_thread(&mut next_threads, 0, sp, ~[None, ..10], vec::from_elem(self.registers, 0u));
             }
 
@@ -113,41 +106,31 @@ impl Regex {
                 };
 
                 'thread: loop {
-                    if debug {
-                        println!("\tThread {}", thread.id);
-                    }
+                    debug!("\tThread {}", thread.id);
                     
                     match self.code[thread.pc] {
                         Char(ch) => {
-                            if debug {
-                                print!("\t\tChar({}): ", ch);
-                            }
+                            debug!("\t\tChar({}): ", ch);
                             
                             if c == ch {
-                                if debug {
-                                    println("Match");
-                                }
+                                debug!("\t\t\tMatch");
                                 
                                 thread.pc += 1;
                                 next_threads.push(thread);
-                            } else if debug {
-                                println("Fail");
+                            } else {
+                                debug!("\t\t\tFail");
                             }
                             break;
                         }
                         Any => {
-                            if debug {
-                                println("\t\tAny");
-                            }
+                            debug!("\t\tAny");
                             
                             thread.pc += 1;
                             next_threads.push(thread);
                             break;
                         }
                         Range(start, end) => {
-                            if debug {
-                                println!("\t\tRange({}, {}) <{}, {}>", start as u8, end as u8, start, end);
-                            }
+                            debug!("\t\tRange({}, {}) <{}, {}>", start as u8, end as u8, start, end);
                             
                             if c >= start && c <= end {
                                 thread.pc += 1;
@@ -156,71 +139,50 @@ impl Regex {
                             break;
                         }
                         Fork(pc1, pc2) => {
-                            if debug {
-                                println!("\t\tFork({}, {}): add thread {}: {}", pc1, pc2, thread_id, thread.match_start);
-                            }
+                            debug!("\t\tFork({}, {}): add thread {}: {}", pc1, pc2, thread_id, thread.match_start);
                             
                             add_thread(&mut threads, pc2, thread.match_start, thread.captures.clone(), thread.registers.clone());
                             thread.pc = pc1;
-                            //threads.push_back(thread);
                         }
                         Jump(new_pc) => {
-                            if debug {
-                                println!("\t\tJump({})", new_pc);
-                            }
+                            debug!("\t\tJump({})", new_pc);
                             
                             thread.pc = new_pc;
                         }
                         ConditionalJumpEq(register, value, new_pc) => {
-                            if debug {
-                                print!("\t\tConditionalJump({} == {}): ", thread.registers[register], value);
-                            }
+                            debug!("\t\tConditionalJump({} == {}): ", thread.registers[register], value);
 
                             if thread.registers[register] == value {
-                                if debug {
-                                    println!("Jump({})", new_pc);
-                                }
+                                debug!("\t\t\tJump({})", new_pc);
 
                                 thread.pc = new_pc;
                             } else {
-                                if debug {
-                                    println!("Fail");
-                                }
+                                debug!("\t\t\tFail");
 
                                 thread.pc += 1;
                             }
                         }
                         ConditionalJumpLE(register, value, new_pc) => {
-                            if debug {
-                                print!("\t\tConditionalJump({} <= {}): ", thread.registers[register], value);
-                            }
+                            debug!("\t\tConditionalJump({} <= {}): ", thread.registers[register], value);
 
                             if thread.registers[register] < value {
-                                if debug {
-                                    println!("Jump({})", new_pc);
-                                }
+                                debug!("\t\t\tJump({})", new_pc);
 
                                 thread.pc = new_pc;
                             } else {
-                                if debug {
-                                    println!("Fail");
-                                }
+                                debug!("\t\t\tFail");
 
                                 thread.pc += 1;
                             }
                         }
                         Increment(register) => {
-                            if debug {
-                                println!("\t\tIncrement({})", register);
-                            }
+                            debug!("\t\tIncrement({})", register);
 
                             thread.registers[register] += 1;
                             thread.pc += 1;
                         }
                         SaveStart(group) => {
-                            if debug {
-                                println!("\t\tSaveStart({}): {}", group, sp);
-                            }
+                            debug!("\t\tSaveStart({}): {}", group, sp);
 
                             thread.captures = thread.captures.clone();
 
@@ -230,9 +192,7 @@ impl Regex {
                             thread.pc +=1;
                         }
                         SaveEnd(group) => {
-                            if debug {
-                                println!("\t\tSaveEnd({}): {}", group, sp);
-                            }
+                            debug!("\t\tSaveEnd({}): {}", group, sp);
                             
                             if group < thread.captures.len() {
                                 match thread.captures[group] {
@@ -243,9 +203,7 @@ impl Regex {
                             thread.pc +=1;
                         }
                         AssertStart => {
-                            if debug {
-                                println!("\t\tAssert ^: {}", sp == 0);
-                            }
+                            debug!("\t\tAssert ^: {}", sp == 0);
 
                             if sp == 0 {
                                 thread.pc += 1;
@@ -254,9 +212,7 @@ impl Regex {
                             }
                         }
                         AssertEnd => {
-                            if debug {
-                                println!("\t\tAssert $: {}", sp == input.len());
-                            }
+                            debug!("\t\tAssert $: {}", sp == input.len());
 
                             if sp == input.len() {
                                 thread.pc += 1;
@@ -272,20 +228,14 @@ impl Regex {
                             };
                             let b = is_word_char(c);
 
-                            if debug {
-                                print!("\t\tAssert b: ({}, {}): ", a, b);
-                            }
+                            debug!("\t\tAssert b: ({}, {}): ", a, b);
 
                             if (a && !b) || (!a && b) {
-                                if debug {
-                                    println("true");
-                                }
+                                debug!("\t\t\ttrue");
 
                                 thread.pc += 1;
                             } else {
-                                if debug {
-                                    println("false");
-                                }
+                                debug!("\t\t\tfalse");
 
                                 break;
                             }
@@ -298,28 +248,20 @@ impl Regex {
                             };
                             let b = is_word_char(c);
 
-                            if debug {
-                                print!("\t\tAssert b: ({}, {}): ", a, b);
-                            }
+                            debug!("\t\tAssert b: ({}, {}): ", a, b);
                             
                             if (a && !b) || (!a && b) {
-                                if debug {
-                                    println("false");
-                                }
+                                debug!("\t\t\tfalse");
 
                                 break;
                             } else {
-                                if debug {
-                                    println("true");
-                                }
+                                debug!("\t\t\ttrue");
 
                                 thread.pc += 1;
                             }
                         }
                         Accept => {
-                            if debug {
-                                println("\t\tAccept");
-                            }
+                            debug!("\t\tAccept");
                             
                             let mut matches = ~[];
                             matches.push(Match{ start: thread.match_start, end: sp });
@@ -334,8 +276,6 @@ impl Regex {
                         }
                     }
                 }
-
-                //t += 1;
             }
         }
 
@@ -461,4 +401,109 @@ mod test {
 
         println!("{} tests PASSED", tests::TestCases.len());
     }
+}
+
+#[cfg(test)]
+mod bench {
+    extern mod extra;
+/*
+    use std::path::Path;
+    use std::io;
+
+    use extra::time;
+    use extra::test;
+*/
+    use super::Regex;
+
+    #[bench]
+    fn bench_compile_uri(b: &mut extra::test::BenchHarness) {
+        let pattern = "([a-zA-Z][a-zA-Z0-9]*)://([^ /]+)(/[^ ]*)?";
+        do b.iter {
+            Regex::new(pattern);
+        }
+    }
+
+    #[bench]
+    fn bench_compile_email(b: &mut extra::test::BenchHarness) {
+        let pattern = "([^ @]+)@([^ @]+)";
+        do b.iter {
+            Regex::new(pattern);
+        }
+    }
+
+    #[bench]
+    fn bench_compile_date(b: &mut extra::test::BenchHarness) {
+        let pattern = "([0-9][0-9]?)/([0-9][0-9]?)/([0-9][0-9]([0-9][0-9])?)";
+        do b.iter {
+            Regex::new(pattern);
+        }
+    }
+
+    #[bench]
+    fn bench_compile_uri_or_email(b: &mut extra::test::BenchHarness) {
+        let pattern = "([a-zA-Z][a-zA-Z0-9]*)://([^ /]+)(/[^ ]*)?|([^ @]+)@([^ @]+)";
+        do b.iter {
+            Regex::new(pattern);
+        }
+    }
+
+    #[bench]
+    fn bench_match(b: &mut extra::test::BenchHarness) {
+        //let pattern = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+        //let input = "john@server.department.company.com";
+        let pattern = "^[-+]?[0-9]*\\.?[0-9]+$";
+        let input = "3.14";
+        let re = Regex::new(pattern);
+
+        do b.iter {
+            re.partial_match(input);
+        }
+    }
+/*
+    #[bench]
+    fn bench_match_uri(b: &mut extra::test::BenchHarness) {
+        bench("([a-zA-Z][a-zA-Z0-9]*)://([^ /]+)(/[^ ]*)?");
+        b.iterations = 1;
+        do b.iter {}
+    }
+
+    #[bench]
+    fn bench_match_email(b: &mut extra::test::BenchHarness) {
+        bench("([^ @]+)@([^ @]+)");
+        b.iterations = 1;
+        do b.iter {}
+    }
+
+    #[bench]
+    fn bench_match_date(b: &mut extra::test::BenchHarness) {
+        bench("([0-9][0-9]?)/([0-9][0-9]?)/([0-9][0-9]([0-9][0-9])?)");
+        b.iterations = 1;
+        do b.iter {}
+    }
+
+    #[bench]
+    fn bench_match_uri_or_email(b: &mut extra::test::BenchHarness) {
+        bench("([a-zA-Z][a-zA-Z0-9]*)://([^ /]+)(/[^ ]*)?|([^ @]+)@([^ @]+)");
+        b.iterations = 1;
+        do b.iter {}
+    }
+
+    fn bench(pattern: &str) {
+        let input = read_input();
+        let re = Regex::new(pattern);
+
+        let start = time::precise_time_s();
+        for line in input.iter() {
+            re.partial_match(*line);
+        }
+        let end = time::precise_time_s();
+
+        println!("\nActual {} s", start - end);
+    }
+
+    fn read_input() -> ~[~str] {
+        let file = "bench-input.txt";
+        io::file_reader(&Path(file)).unwrap().read_lines()
+    }
+*/
 }
