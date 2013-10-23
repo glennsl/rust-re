@@ -37,6 +37,7 @@ struct Parser<'self> {
     pattern: &'self str,
     pos: uint,
     next: uint,
+    current: Option<char>,
     captures: uint
 }
 
@@ -46,6 +47,7 @@ impl<'self> Parser<'self> {
             pattern: pattern,
             pos: 0,
             next: 0,
+            current: None,
             captures: 0
         }
     }
@@ -54,12 +56,14 @@ impl<'self> Parser<'self> {
         self.pos = self.next;
 
         if (self.pos >= self.pattern.len()) {
-            return None;
+            self.current = None;
         } else {
             let str::CharRange { ch, next } = self.pattern.char_range_at(self.pos);
             self.next = next;
-            return Some(ch);
+            self.current = Some(ch);
         }
+
+        return self.current;
     }
 
     fn advance(&mut self, n: uint) {
@@ -100,7 +104,7 @@ pub fn parse(pattern: &str) -> Expression {
     let e = parse_recursive(&mut parser);
 
     if parser.pos < pattern.len() {
-    	// Inferred since parse_Recursive only terminates on end of string or 
+    	// Inferred since parse_recursive only terminates on end of string or 
     	// encountering a ')'. And since we haven't reached end of string...
     	parser.fail("Unexpected ')' encountered.");
     }
@@ -250,36 +254,46 @@ fn parse_escape(parser: &mut Parser) -> Expression {
 }
 
 fn parse_group(parser: &mut Parser) -> Expression {
+    let mut capture = false;
+
 	match parser.peek(1) {
 		Some ('?') => {
 			match parser.peek(2) {
-				Some(':') => {
-					// Non-capturing group
-					parser.advance(2);
-					let e = parse_recursive(parser);
-					return SubExpression(~e, None);
-				}
-				Some('=') => {
-					//Positive lookahead
-					parser.fail("NOT IMPLEMENTED");
-				}
-				Some('!') => {
-					//Negative lookahead
-					parser.fail("NOT IMPLEMENTED");
-				}
-				Some(_) => (),
+                // Non-capturing group
+				Some(':') => parser.advance(2),
+
+                //Positive lookahead
+				Some('=') => parser.fail("NOT IMPLEMENTED"),
+
+                //Negative lookahead
+				Some('!') =>parser.fail("NOT IMPLEMENTED"),
+
+                // Normal capturing group
+				Some(_) => capture = true,
+
 				None => parser.fail("Unterminated sub expression.")
 			}
 		}
-		Some(_) => (),
+        // Normal capturing group
+		Some(_) => capture = true,
+
 		None => parser.fail("Unterminated sub expression.")
 	}
 
-	// Normal capturing group
-	parser.captures += 1;
-	let capture_slot = parser.captures;
+	
+	let capture_slot = if capture {
+        parser.captures += 1;
+        Some(parser.captures)
+    } else {
+        None
+    };
+
 	let e = parse_recursive(parser);
-	return SubExpression(~e, Some(capture_slot));
+
+    match parser.current {
+        Some(')') => return SubExpression(~e, capture_slot),
+        _ => parser.fail("Unterminated group")
+    }	
 }
 
 fn parse_repetition(parser: &mut Parser, expr: Expression) -> Expression {

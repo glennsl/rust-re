@@ -638,7 +638,7 @@ xyzabc
     // xmllib problem
     //(r"(([a-z]+):)?([a-z]+)$", "smil", Match, "smil", &'static ["None", "None", "smil"]), FAILS doesn't capture on paths not taken
     // bug 110866: reference to undefined group
-    (r"((.)\1+)", "", ParseError, "", &'static []),
+    //(r"((.)\1+)", "", ParseError, "", &'static []), NOT IMPLEMENTED
     // bug 111869: search (PRE/PCRE NoMatchs on this one, SRE doesn"t)
     //(r".*d", "abc\nabd", Match, "abd", &'static []), FAILS . matches newlines
     // bug 112468: various expected syntax errors

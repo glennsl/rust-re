@@ -390,6 +390,7 @@ mod test {
                         errors += 1;
                     }
                     tests::ParseError => {
+                        // Currently unable to distinguish between expected parse errors and other errors.
                         //println("\tTest pattern \"" + pattern + "\" on \"" + input + "\" failed. Expected parse error.\n");  
                     }
                 }
@@ -451,8 +452,10 @@ mod bench {
     fn bench_match(b: &mut extra::test::BenchHarness) {
         //let pattern = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
         //let input = "john@server.department.company.com";
-        let pattern = "^[-+]?[0-9]*\\.?[0-9]+$";
-        let input = "3.14";
+        //let pattern = "^[-+]?[0-9]*\\.?[0-9]+$";
+        //let input = "3.14";
+        let pattern = "a(b|c)*d";
+        let input = "abcd";
         let re = Regex::new(pattern);
 
         do b.iter {
