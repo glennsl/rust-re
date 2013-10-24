@@ -1,4 +1,4 @@
-use std::str;
+//use std::str;
 
 use EAssertStart = parse::AssertStart;
 use EAssertEnd = parse::AssertEnd;
@@ -67,7 +67,7 @@ fn print_expression_tree_recursive(expression: &Expression, indent: uint) {
                 do (indent + 1).times {
                     print("  ");
                 }
-                print!("[{}, {}]", start as u8, end as u8);
+                print!("[{}, {}]", start as u32, end as u32);
                 print!(" <{}, {}>", start, end);
                 println("");
             }

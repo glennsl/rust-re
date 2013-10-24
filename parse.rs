@@ -1,11 +1,11 @@
 extern mod extra;
 
 use std::num;
-use std::u8;
 use std::str;
+use std::char;
 use std::from_str;
 use std::iter;
-use std::vec;
+//use std::vec;
 use extra::sort;
 
 pub enum QuantifierType {
@@ -135,12 +135,19 @@ fn negate_char_ranges(ranges: &[(char, char)]) -> Expression {
     let mut end = '\0';
     for &(rstart, rend) in sorted_ranges.iter() {
         if rstart > end {
-            inverted_ranges.push((start, (rstart as u8 - 1) as char));
+            match char::from_u32(rstart as u32 - 1) {
+                Some(c) => inverted_ranges.push((start, c)),
+                None => inverted_ranges.push((start, rstart))
+            }
         }
-        start = num::max(end as u8, rend as u8 + 1) as char;
+        start = match char::from_u32(num::max(end as u32, rend as u32 + 1)) {
+            Some(c) => c,
+            None => rend
+        };
         end = start;
     }
-    inverted_ranges.push((start, u8::max_value as char));
+
+    inverted_ranges.push((start, char::MAX));
 
     return CharacterClass(inverted_ranges);
 }

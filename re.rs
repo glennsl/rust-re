@@ -69,11 +69,6 @@ impl Regex {
 
         let mut thread_id = 0;
         let add_thread = |l: &mut ~[~Thread], pc, sp, captures: ~[Option<Match>], registers: ~[uint]| {
-            /*
-            if thread_id == 50 {
-                fail!("Infinite loop?");
-            }
-            */
             let t = ~Thread {
                 pc: pc,
                 id: thread_id,
@@ -86,7 +81,6 @@ impl Regex {
         };
 
         for (sp, c) in input.iter().chain("\x03".iter()).enumerate() {
-
             debug!("Input {}", c);
 
             if matched.is_none() {
@@ -212,9 +206,9 @@ impl Regex {
                             }
                         }
                         AssertEnd => {
-                            debug!("\t\tAssert $: {}", sp == input.len());
+                            debug!("\t\tAssert $: {}", sp == input.char_len());
 
-                            if sp == input.len() {
+                            if sp == input.char_len() {
                                 thread.pc += 1;
                             } else {
                                 break;
@@ -311,7 +305,7 @@ fn main()  {
                 Some(matches) => {
                     println("\nYay!");
                     for (i, m) in matches.iter().enumerate() {
-                        println!("  {}: {} ({}, {})", i, input.slice(m.start, m.end), m.start, m.end);
+                        println!("  {}: {} ({}, {})", i, input.slice_chars(m.start, m.end), m.start, m.end);
                     }
                     println("");
                 }
@@ -344,7 +338,7 @@ mod test {
                     Some(matches) => {
                         let m = matches.head();
                         let captures = matches.tail();
-                        let actual_match = input.slice(m.start, m.end);
+                        let actual_match = input.slice_chars(m.start, m.end);
 
                         match result {
                             tests::Match => {
@@ -359,7 +353,7 @@ mod test {
                                     match_error = true;
                                 } else {
                                     for (i, m) in captures.iter().enumerate() {
-                                        let capture = input.slice(m.start, m.end).to_owned();
+                                        let capture = input.slice_chars(m.start, m.end).to_owned();
                                         if capture != expected_captures[i].to_owned() {
                                             println!("Expected capture {} to be \"{}\". Got \"{}\"", i, expected_captures[i], capture);
                                             match_error = true;

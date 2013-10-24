@@ -52,11 +52,11 @@ pub static TestCases: &'static [(&'static str, &'static str, TestResult, &'stati
     //("", "", Match, "", &'static []),
 
     // Unicode
-    //("①②③", "①②③", Match, "①②③", &'static []),
-    //("①②③", "①②③④⑤", Match, "①②③", &'static []),
-    //("①(②)③", "①②③", Match, "①②③", &'static ["②"]),
-    //("[①②③]*", "①②③", Match, "①②③", &'static []),
-    //("[^④⑤]*", "①②③", Match, "①②③", &'static []),
+    ("①②③", "①②③", Match, "①②③", &'static []),
+    ("①②③", "①②③④⑤", Match, "①②③", &'static []),
+    ("①(②)③", "①②③", Match, "①②③", &'static ["②"]),
+    ("[①②③]*", "①②③", Match, "①②③", &'static []),
+    ("[^④⑤]*", "①②③", Match, "①②③", &'static []),
 
     // Infinite loop issues
     // A**
