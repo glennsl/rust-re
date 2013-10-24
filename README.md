@@ -21,15 +21,30 @@ Currently implemented features
 * Greedy quantifiers (?, *, +)
 * Arbitrary repetitions (e.g. {2}, {2,} and {2, 3})
 * Non.greeedy quantifiers (??, *?, +? and {}?)
+* Sub-Level 1 Unicode support
+    * Hex notation (provided by Rust)
+    * Accepts and matches unicode literals and ranges
 
-To be implemented
+To do (maybe)
 -----------------
 
 * Backreferences? (\1 to \9)
 * Positive and negative lookahead? ((?=) and (?!))
 * Infinite loop detection
-* Unicode support
+* Level 1 Unicode support
+    * Unicode property character classes (e.g. [\p{L|Nd}])
+    * Simple Unicode word boundaries
+    * Simple case folding (should be provided by the standard library)
+    * Unicde line boundaries
+* Level 2 Unicode support
+    * Normalization (provided by Rust?)
+    * Grapheme clusters
+    * Default word boundaries
+    * Full case folding (should be provided by the standard library)
+    * Unicode literal by name (e.g. \p{name=BYTE ORDER MARK})
+    * Full properties
 * Options
     * Ignore case
     * Multiline
     * . not matching newline
+* A whole bunch of optimizations
