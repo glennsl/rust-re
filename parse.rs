@@ -35,8 +35,8 @@ pub enum Expression {
 
 struct Parser<'self> {
     pattern: &'self str,
-    pos: uint,
-    next: uint,
+    pos: uint,  // in bytes
+    next: uint, // in bytes
     current: Option<char>,
     captures: uint
 }
@@ -66,7 +66,7 @@ impl<'self> Parser<'self> {
         return self.current;
     }
 
-    fn advance(&mut self, n: uint) {
+    fn consume_chars(&mut self, n: uint) {
         do n.times {
             self.next();
         }
@@ -112,6 +112,7 @@ pub fn parse(pattern: &str) -> Expression {
     return e;
 }
 
+#[inline]
 fn do_concat(stack: &mut ~[Expression]) {
     while stack.len() > 1 {
         let (right, left) = (stack.pop(), stack.pop());
@@ -119,6 +120,7 @@ fn do_concat(stack: &mut ~[Expression]) {
     }
 }
 
+#[inline]
 fn do_alternate(stack: &mut ~[Expression]) {
     while stack.len() > 1 {
         let (right, left) = (stack.pop(), stack.pop());
@@ -126,6 +128,7 @@ fn do_alternate(stack: &mut ~[Expression]) {
     }
 }
 
+#[inline]
 fn negate_char_ranges(ranges: &[(char, char)]) -> Expression {
     let mut inverted_ranges = ~[];
 
@@ -152,6 +155,7 @@ fn negate_char_ranges(ranges: &[(char, char)]) -> Expression {
     return CharacterClass(inverted_ranges);
 }
 
+#[inline]
 fn parse_charclass(parser: &mut Parser) -> Expression {
     let mut ranges: ~[(char, char)] = ~[];
     let mut negated = false;
@@ -205,6 +209,7 @@ fn parse_charclass(parser: &mut Parser) -> Expression {
     }
 }
 
+#[inline]
 fn parse_common_escape(c: char) -> Option<Expression> {
     let ranges = match c {
         'd' |
@@ -234,6 +239,7 @@ fn parse_common_escape(c: char) -> Option<Expression> {
     }
 }
 
+#[inline]
 fn parse_charclass_escape(parser: &mut Parser) -> Expression {
 	match parser.next() {
         Some(c) => {
@@ -246,6 +252,7 @@ fn parse_charclass_escape(parser: &mut Parser) -> Expression {
 	}
 }
 
+#[inline]
 fn parse_escape(parser: &mut Parser) -> Expression {
     match parser.next() {
         Some('b') => AssertWordBoundary,
@@ -260,6 +267,7 @@ fn parse_escape(parser: &mut Parser) -> Expression {
     }
 }
 
+#[inline]
 fn parse_group(parser: &mut Parser) -> Expression {
     let mut capture = false;
 
@@ -267,7 +275,7 @@ fn parse_group(parser: &mut Parser) -> Expression {
 		Some ('?') => {
 			match parser.peek(2) {
                 // Non-capturing group
-				Some(':') => parser.advance(2),
+				Some(':') => parser.consume_chars(2),
 
                 //Positive lookahead
 				Some('=') => parser.fail("NOT IMPLEMENTED"),
@@ -303,6 +311,7 @@ fn parse_group(parser: &mut Parser) -> Expression {
     }	
 }
 
+#[inline]
 fn parse_repetition(parser: &mut Parser, expr: Expression) -> Expression {
 	let mut low = None;
 	let mut buffer = ~"";

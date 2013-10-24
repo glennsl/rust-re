@@ -47,6 +47,7 @@ pub enum Instruction {
 }
 
 // TODO: Also defined in parse
+#[inline]
 fn do_alternate(stack: &mut ~[Expression]) {
     while stack.len() > 1 {
         let (right, left) = (stack.pop(), stack.pop());
@@ -190,6 +191,7 @@ fn compile_recursive(expression: &Expression, code: &mut ~[Instruction], registe
     }
 }
 
+#[inline]
 fn fork(typ: QuantifierType, greedy: uint, nongreedy: uint) -> Instruction {
 	match typ {
 		Greedy => Fork(greedy, nongreedy),
