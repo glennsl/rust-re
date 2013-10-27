@@ -5,63 +5,28 @@ use std::os;
 use std::util;
 use std::vec;
 
-use compile::{
-    Instruction,
-    Char,
-    Any,
-    Range,
-    Fork,
-    Jump,
-    ConditionalJumpEq,
-    ConditionalJumpLE,
-    Increment,
-    SaveStart,
-    SaveEnd,
-    AssertStart,
-    AssertEnd,
-    AssertWordBoundary,
-    AssertNonWordBoundary,
-    Accept
-};
+use compile::Instruction;
 
 mod parse;
 mod compile;
+mod matcher;
+mod pike;
 mod debug;
-/*
-struct Thread<'self> {
-    id: uint,
-    pc: uint,
-    match_start: uint,
-    captures: &'self mut [Option<Match>]
-}
-*/
-struct Thread {
-    id: uint,
-    pc: uint,
-    match_start: uint,
-    captures: ~[Option<Match>],
-    registers: ~[uint]
-}
-
-#[deriving(Clone)]
-pub struct Match {
-    start: uint,
-    end: uint
-}
 
 pub struct Regex {
-    priv code: ~[Instruction],
-    priv registers: uint
+    priv code: ~[Instruction]
 }
 
 impl Regex {
     fn new(pattern: &str) -> ~Regex {
         let etree = parse::parse(pattern);
         let code = compile::compile(&etree);
-        let registers = compile::count_registers(code);
-        return ~Regex { code: code, registers: registers };
+        return ~Regex { code: code };
     }
-
+    fn partial_match(&self, input: &str) -> Option<~[matcher::Match]> {
+        pike::PikeMatcher::do_match(self.code, input)
+    }
+/*
     fn partial_match(&self, input: &str) -> Option<~[Match]> {
         let mut threads = vec::with_capacity(self.code.len()); // clist
         let mut next_threads = vec::with_capacity(self.code.len()); // nlist
@@ -275,15 +240,7 @@ impl Regex {
 
         return matched;
     }
-}
-
-// Not very international, but this is the standard
-// http://www.ecma-international.org/ecma-262/5.1/#sec-15.10.2.6
-fn is_word_char(c: char) -> bool {
-    (c >= 'a' && c <= 'z') ||
-    (c >= 'A' && c <= 'Z') ||
-    (c >= '0' && c <= '9') ||
-    c == '_'
+    */
 }
 
 fn main()  {

@@ -1,10 +1,8 @@
-extern mod extra;
-
-use EAssertStart = parse::AssertStart;
-use EAssertEnd = parse::AssertEnd;
-use EAssertWordBoundary = parse::AssertWordBoundary;
-use EAssertNonWordBoundary = parse::AssertNonWordBoundary;
-use parse::{
+use EAssertStart = super::parse::AssertStart;
+use EAssertEnd = super::parse::AssertEnd;
+use EAssertWordBoundary = super::parse::AssertWordBoundary;
+use EAssertNonWordBoundary = super::parse::AssertNonWordBoundary;
+use super::parse::{
 	Expression,
 	Literal,
 	AnyLiteral,
@@ -20,13 +18,11 @@ use parse::{
 	UnboundedRepetition,
 	BoundedRepetition
 };
-use parse::{
+use super::parse::{
 	QuantifierType,
 	Greedy,
 	NonGreedy
 };
-
-mod parse;
 
 pub enum Instruction {
     Char(char),

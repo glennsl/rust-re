@@ -1,5 +1,3 @@
-extern mod extra;
-
 use std::num;
 use std::str;
 use std::char;
